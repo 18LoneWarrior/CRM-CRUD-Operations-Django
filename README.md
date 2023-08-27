@@ -1,13 +1,17 @@
 # Import-Export
+
 This application is used to perform CRUD operations on user data.
 
+
 # Features
+
 1. Registration , Login, Logout.
 2. Import - Export data from multiple file formats.
 3. Create, update, delete records.
 
 
-# Output
+
+# Screenshots
 
 ![20](https://github.com/18LoneWarrior/Import-Export/assets/107700143/b673d5e0-6c92-461f-a6a4-7a2c38d59fdc)
 
