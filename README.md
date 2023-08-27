@@ -1,4 +1,11 @@
 # Import-Export
+This application is used to perform CRUD operations on user data.
+
+# Features
+1. Registration , Login, Logout.
+2. Import - Export data from multiple file formats.
+3. Create, update, delete records.
+
 
 # Output
 
