@@ -61,3 +61,9 @@ class AddRecordForm(forms.ModelForm):
     class Meta:
         model = Record
         exclude = ('user',)
+
+
+class UploadRecord(forms.Form):
+    class Meta:
+        model = Record
+        fields = '__all__'

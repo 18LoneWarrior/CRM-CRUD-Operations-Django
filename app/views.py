@@ -3,6 +3,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .forms import SignUpForm, AddRecordForm
 from .models import Record
+from .resources import Resource
+from tablib import Dataset
+from django.http import HttpResponse
+import pandas as pd
 
 
 def home(request):
@@ -97,3 +101,29 @@ def update_record(request, pk):
     else:
         messages.error(request, "Login First")
         return redirect('home')
+
+
+def import_record(request):
+    records = Record.objects.all()
+    if request.method == 'POST':
+        resource = Resource()
+        dataset = Dataset()
+        new_record = request.FILES['import_record']
+        imported_data = dataset.load(new_record.read(), format='xlsx')
+        for data in imported_data:
+            value = Record(
+                data[0],
+                data[1],
+                data[2],
+                data[3],
+                data[4],
+                data[5],
+                data[6],
+                data[7],
+                data[8],
+                data[9],
+            )
+            value.save()
+
+    messages.success(request, "Dataset imported successfully")
+    return render(request, 'import_record.html', {'records': records})
