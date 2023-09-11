@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+# from app.admin import my_site
+from app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('app.urls')),
+    path('admin/app/record/upload_csv/confirm/', views.confirm_data, name='confirm_data'),
 ]
