@@ -22,5 +22,8 @@ from app import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('app.urls')),
-    path('admin/app/record/upload_csv/confirm/', views.confirm_data, name='confirm_data'),
 ]
+
+admin.site.index_title = 'Data Manager'  # OVERRIDES THE CHANGE IN THE TITLE OF THE ADMIN PAGE
+admin.site.site_header = 'Data Manager Admin'  # OVERRIDES THE CHANGE IN THE HEADER OF THE ADMIN PAGE.
+admin.site.site_title = 'Data Storage'
