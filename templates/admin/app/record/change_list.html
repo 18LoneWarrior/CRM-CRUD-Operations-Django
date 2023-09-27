@@ -1,10 +1,11 @@
 {% extends "admin/change_list.html" %}
 {% load static %}
 {% block content %}
-
-<a href="upload-csv/" class="btn btn-secondary"><button>Import</button></a>
-<a href="export-csv/" class="btn btn-secondary"><button>Generate Report</button></a>
-
-
+    <button type="submit">
+        <a href="upload-csv/" class="btn btn-secondary">Import</a>
+    </button>
+    <button type="submit">
+        <a href="export-csv/" class="btn btn-secondary">Generate Report</a>
+    </button>
 {{ block.super }}
 {% endblock %}

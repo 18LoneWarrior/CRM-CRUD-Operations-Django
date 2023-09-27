@@ -2,14 +2,14 @@
 
 {% block content %}
     <div id="content-main">
-        <form method="POST" action="{% url 'admin:data_preview' %}">      {# action="{% url 'admin:data_preview' %}" #}
+        <form method="POST"  name="confirm">   {#action="{% url 'admin:save_data' %}#}
             {% csrf_token %}
             <fieldset class="module aligned">
                 <h2>{{ title }}</h2>
                 <table>
                     <thead>
                     <tr>
-                        <th><input type="checkbox" name="select_all" /></th>
+                        <th></th>
                         <th>ID</th>
                         <th>Creation Date</th>
                         <th>First Name</th>
@@ -24,8 +24,9 @@
                     </thead>
                     <tbody>
                     {% for record in records %}
+{#                    {% for record in selected_data %}#}
                         <tr>
-                            <td><input type="checkbox" name="import_record" value="{{ forloop.counter0 }}"></td>
+                            <td><input type= hidden name="import_record" value="{{ forloop.counter0 }}"></td>
                             <td>{{ record.0 }}</td>
                             <td>{{ record.1 }}</td>
                             <td>{{ record.2 }}</td>
@@ -41,7 +42,7 @@
                     </tbody>
                 </table>
                 <div class="submit-row">
-                    <input type="submit" value="Review Selected Data">
+                    <input type="submit" value="Confirm Import" name="confirm">
                 </div>
             </fieldset>
         </form>
