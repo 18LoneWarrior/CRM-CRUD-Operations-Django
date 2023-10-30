@@ -67,3 +67,15 @@ class UploadRecord(forms.Form):
     class Meta:
         model = Record
         fields = '__all__'
+
+
+class RecordSearchForm(forms.ModelForm):
+    class Meta:
+        model = Record
+        fields = ['city', 'state']
+
+    # search = forms.CharField(max_length=100, required=False, label="Search")
+    city = forms.ModelChoiceField(queryset=Record.objects.values_list
+    ('city', flat=True).distinct(), empty_label="--_--", required=False)
+    state = forms.ModelChoiceField(queryset=Record.objects.values_list
+    ('state', flat=True).distinct(), empty_label="--_--", required=False)

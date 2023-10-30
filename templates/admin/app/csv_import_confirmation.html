@@ -5,11 +5,17 @@
         <form method="POST" action="{% url 'admin:data_preview' %}">      {# action="{% url 'admin:data_preview' %}" #}
             {% csrf_token %}
             <fieldset class="module aligned">
-                <h2>{{ title }}</h2>
+                <h1>{{ "Review Imported Data" }}</h1>
+                <h3>No of Records : {{ records|length }}</h3>
+                <h3>Selected Records: <span id="selectedRecordsCount">0</span></h3>
+                <br>
+                <div id="dataList"><strong>Selected Data : </strong></div>
+                <br>
+                <br>
                 <table>
                     <thead>
                     <tr>
-                        <th><input type="checkbox" name="select_all" /></th>
+                        <th><input type="checkbox" id="toggleCheckbox"  onclick="Checkbox()" onchange="dataList()" name="select_all" /></th>
                         <th>ID</th>
                         <th>Creation Date</th>
                         <th>First Name</th>
@@ -25,7 +31,7 @@
                     <tbody>
                     {% for record in records %}
                         <tr>
-                            <td><input type="checkbox" name="import_record" value="{{ forloop.counter0 }}"></td>
+                            <td><input type="checkbox" name="import_record"  value="{{ forloop.counter0 }}" onchange="dataList()"></td>
                             <td>{{ record.0 }}</td>
                             <td>{{ record.1 }}</td>
                             <td>{{ record.2 }}</td>
@@ -46,4 +52,47 @@
             </fieldset>
         </form>
     </div>
+    <script>
+        function Checkbox(){
+            const checkboxes = document.querySelectorAll('input[type=checkbox]');
+            const toggleCheckbox = document.getElementById('toggleCheckbox');
+            const isChecked = toggleCheckbox.checked;
+
+            checkboxes.forEach(function(checkbox){
+                checkbox.checked = isChecked
+            })
+        }
+        function dataList(){
+            const dataList = document.getElementById('dataList');
+            const checkboxes = document.querySelectorAll('input[name="import_record"]');
+            const selectedRecordsCount = document.getElementById('selectedRecordsCount');
+            const selectedData = []
+
+            checkboxes.forEach(function(checkbox){
+                if (checkbox.checked){
+                    const row = checkbox.closest('tr');
+                    const first_name = row.querySelector('td:nth-child(4)').textContent;
+                    const last_name = row.querySelector('td:nth-child(5)').textContent
+                    selectedData.push({
+                        first_name: first_name,
+                        last_name: last_name,
+                    })
+                }
+            })
+
+            selectedRecordsCount.innerText = selectedData.length;
+            dataList.innerHTML += '<br>'
+            dataList.innerHTML = '<strong>Selected Data : </strong>'
+            
+            if (selectedData.length>0){
+                dataList.innerHTML += '<ul>'
+                selectedData.forEach(function(data){
+                    dataList.innerHTML += '<li>' + data.first_name + ' ' + data.last_name + '</li>'
+                })
+                dataList.innerHTML += '</ul>'
+            }else {
+                dataList.innerHTML += '<strong>No Data Selected</strong>'
+            }
+        }
+    </script>
 {% endblock %}

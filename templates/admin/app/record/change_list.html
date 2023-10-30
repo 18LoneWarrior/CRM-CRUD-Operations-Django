@@ -2,10 +2,13 @@
 {% load static %}
 {% block content %}
     <button type="submit">
-        <a href="upload-csv/" class="btn btn-secondary">Import</a>
+        <a href="upload-csv/" class="addlink">Import</a>
     </button>
     <button type="submit">
         <a href="export-csv/" class="btn btn-secondary">Generate Report</a>
+    </button>
+    <button type="submit">
+        <a href="search/" class="btn btn-secondary">Records</a>
     </button>
 {{ block.super }}
 {% endblock %}

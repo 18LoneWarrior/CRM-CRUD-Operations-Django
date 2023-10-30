@@ -1,16 +1,13 @@
 from django.contrib import admin
-from django.contrib.admin import ModelAdmin
 import csv
+from .forms import RecordSearchForm
 from .models import Record
 from django.urls import path
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django import forms
-from .resources import Resource
 from tablib import Dataset
-from openpyxl import Workbook
-from import_export import resources, fields, widgets
 
 
 # Register your models here.
@@ -31,7 +28,6 @@ def export_csv(modeladmin, request, queryset):
             [str(obj.id), str(obj.created_at), str(obj.first_name), str(obj.last_name), str(obj.email), str(obj.phone),
              str(obj.address), str(obj.city),
              str(obj.state), str(obj.zipcode)])
-
     return response
 
 
@@ -51,8 +47,10 @@ class RecordAdmin(admin.ModelAdmin):
         new_urls = [path('upload-csv/', self.upload_csv, name='upload_csv'),
                     path('export-csv/', export_csv),
                     path('upload-csv/confirm/', self.confirm_import, name='confirm_import'),
-                    path('upload-csv/review/', self.data_preview, name='data_preview'), ]
-        # path('upload-csv/review/save/', self.save_data, name='save_data'), ]
+                    path('upload-csv/review/', self.data_preview, name='data_preview'),
+                    path('search-view/', self.search_view, name='search-view'),
+                    path('search/', self.search, name='search'),
+                    path('search-filter/', self.search_filter, name='search-filter'),]
         return new_urls + urls
 
     def upload_csv(self, request):
@@ -88,7 +86,7 @@ class RecordAdmin(admin.ModelAdmin):
         return render(
             request,
             "admin/app/csv_import_confirmation.html",
-            {"title": "Review Imported Data", "records": records},
+            {"records": records},
         )
 
     def data_preview(self, request):
@@ -127,183 +125,34 @@ class RecordAdmin(admin.ModelAdmin):
 
         imported_data = request.session.get('imported_data', [])
         records = [data for data in imported_data if data in selected_records]
+        return render(request, "admin/app/csv_review.html", {"records": selected_data}, )
 
-        return render(
-            request,
-            "admin/app/csv_review.html",
-            {"title": "Review Imported Data", "records": selected_data},
-        )
+    def search(self, request):
+        form = RecordSearchForm()
+        return render(request, 'admin/app/records.html', {'form': form})
 
-    # def save_data(self, request):
-    #     if request.method == 'POST':
-    #         selected_records = request.POST.getlist('import_record')
-    #         print("--------------", selected_records)
-    #         imported_data = request.session.get('imported_data', [])
-    #         print("+++++++++++++++++", imported_data)
-    #         selected_data = []
-    #
-    #         for index in selected_records:
-    #             index = int(index)
-    #             if 0 <= index < len(imported_data):
-    #                 selected_data.append(imported_data[index])
-    #                 print("========================>>>>>>>", selected_data)
-    #
-    #
-    #         for data in selected_data:
-    #             Record.objects.create(
-    #                 id=data[0],
-    #                 created_at=data[1],
-    #                 first_name=data[2],
-    #                 last_name=data[3],
-    #                 email=data[4],
-    #                 phone=data[5],
-    #                 address=data[6],
-    #                 city=data[7],
-    #                 state=data[8],
-    #                 zipcode=data[9],
-    #             )
-    #         del request.session['imported_data']
-    #
-    #         url = reverse('admin:index')
-    #         return HttpResponseRedirect(url)
+    def search_view(self, request):
+        search_text = request.GET.get('search')
+        if search_text:
+            results = Record.objects.filter(first_name__icontains=search_text)
+        else:
+            results = []
+        context = {"results": results}
+        return render(request, 'admin/app/results.html', context)
 
-    # def confirm_import(self, request):
-    #     if request.method == 'POST':
-    #         selected_records = request.POST.getlist('import_record')
-    #         imported_data = request.session.get('imported_data', [])
-    #         selected_data = []
-    #
-    #         for index in selected_records:
-    #             index = int(index)
-    #             if 0 <= index < len(imported_data):
-    #                 selected_data.append(imported_data[index])
-    #
-    #         return render(
-    #             request,
-    #             "admin/app/csv_review.html",
-    #             {"title": "Review Imported Data", "records": selected_data},
-    #         )
-    #
-    #     imported_data = request.session.get('imported_data', [])
-    #     records = [data for data in imported_data]
-    #
-    #     return render(
-    #         request,
-    #         "admin/app/csv_import_confirmation.html",
-    #         {"title": "Review Imported Data", "records": records},
-    #     )
-    #
-    # def data_preview(self, request):
-    #     if request.method == 'POST':
-    #         selected_records = request.POST.getlist('import_record')
-    #         imported_data = request.session.get('imported_data', [])
-    #         selected_data = []
-    #
-    #         for index in selected_records:
-    #             index = int(index)
-    #             if 0 <= index < len(imported_data):
-    #                 selected_data.append(imported_data[index])
-    #
-    #         # if 'confirm' in request.POST:
-    #         for data in selected_data:
-    #             Record.objects.create(
-    #                 id=data[0],
-    #                 created_at=data[1],
-    #                 first_name=data[2],
-    #                 last_name=data[3],
-    #                 email=data[4],
-    #                 phone=data[5],
-    #                 address=data[6],
-    #                 city=data[7],
-    #                 state=data[8],
-    #                 zipcode=data[9],
-    #             )
-    #
-    #         del request.session['imported_data']
-    #         url = reverse('admin:index')
-    #         return HttpResponseRedirect(url)
-    #
-    #     imported_data = request.session.get('imported_data', [])
-    #     records = [data for data in imported_data]
-    #
-    #     return render(request,
-    #                   "admin/app/csv_review.html",
-    #                   {"title": "Review Imported Data", "records": imported_data},
-    #                   )
-
-    # imported_data = request.session.get('imported_data', [])
-    # records = [data for data in imported_data]
-
-    # return render(
-    #     request,
-    #     "admin/app/csv_review.html",
-    #     {"title": "Review Imported Data", "records": records},
-    # )
-
-    # def save_data(self, request):
-    #     if request.method == 'POST':
-    #         selected_records = request.POST.getlist('import_record')
-    #         # print("--146--", selected_records)
-    #         imported_data = request.session.get('imported_data', [])
-    #         # print("--146--", imported_data)
-    #         selected_data = []
-    #
-    #         # for index in selected_records:
-    #         #     index = int(index)
-    #         #     if 0 <= index < len(imported_data):
-    #         #         selected_data.append(imported_data[index])
-    #
-    #         # if 'confirm' in request.POST:
-    #         for data in selected_data:
-    #             Record.objects.create(
-    #                 id=data[0],
-    #                 created_at=data[1],
-    #                 first_name=data[2],
-    #                 last_name=data[3],
-    #                 email=data[4],
-    #                 phone=data[5],
-    #                 address=data[6],
-    #                 city=data[7],
-    #                 state=data[8],
-    #                 zipcode=data[9],
-    #             )
-    #
-    #         del request.session['imported_data']
-    #         url = reverse('admin:index')
-    #         return HttpResponseRedirect(url)
-
-    # def confirm_import(self, request):
-    #     if request.method == 'POST':
-    #         selected_records = request.POST.getlist('import_record')
-    #         imported_data = request.session.get('imported_data', [])
-    #
-    #         for index in selected_records:
-    #             index = int(index)
-    #             if 0 <= index < len(imported_data):
-    #                 data = imported_data[index]
-    #                 value = Record(
-    #                     id=data[0],
-    #                     created_at=data[1],
-    #                     first_name=data[2],
-    #                     last_name=data[3],
-    #                     email=data[4],
-    #                     phone=data[5],
-    #                     address=data[6],
-    #                     city=data[7],
-    #                     state=data[8],
-    #                     zipcode=data[9],
-    #                 )
-    #                 value.save()
-    #
-    #         del request.session['imported_data']
-    #         url = reverse('admin:index')
-    #         return HttpResponseRedirect(url)
-    #
-    #     imported_data = request.session.get('imported_data', [])
-    #     records = [data for data in imported_data]
-    #
-    #     return render(request, "admin/app/csv_import_confirmation.html",
-    #                   {"records": records})
+    def search_filter(self, request):
+        if request.method == 'GET':
+            form = RecordSearchForm()
+            city = request.GET.get('city')
+            state = request.GET.get('state')
+            if city or state:
+                results = Record.objects.filter(city=city) or Record.objects.filter(state=state)
+            else:
+                results = []
+            context = {"results": results}
+        return render(request, 'admin/app/results.html', context)
 
 
 admin.site.register(Record, RecordAdmin)
+
+

@@ -5,7 +5,10 @@
         <form method="POST"  name="confirm">   {#action="{% url 'admin:save_data' %}#}
             {% csrf_token %}
             <fieldset class="module aligned">
-                <h2>{{ title }}</h2>
+                <h1>{{ "Following Data Will be Saved" }}</h1>
+                <h3>No of Records : {{ records|length }}</h3>
+                <br>
+                <br>
                 <table>
                     <thead>
                     <tr>
