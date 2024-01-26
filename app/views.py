@@ -125,19 +125,5 @@ def import_record(request):
             )
             value.save()
 
-    # messages.success(request, "Dataset imported successfully")
+    messages.success(request, "Dataset imported successfully")
     return render(request, 'import_record.html', {'records': records})
-
-
-# def confirm_data(request):
-#     if request.method == "POST":
-#         data = request.POST.getlist("selected_data")
-#         for item_id in data:
-#             # Find the item by ID and save it to the database
-#             item = next(item for item in request.session["excel_data"] if str(item["id"]) == item_id)
-#             Record.objects.create(**item)
-#         del request.session["excel_data"]  # Remove the data from the session
-#         return redirect("admin:excel_import")
-#     else:
-#         data = request.session.get("excel_data", [])
-#         return render(request, "admin/app/confirm.html", {"data": data})

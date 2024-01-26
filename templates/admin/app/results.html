@@ -29,6 +29,9 @@
                 <td>{{ result.zipcode }}</td>
             </tr>
         {% endfor %}
+        {% for city in cities %}
+            <option value="{{ city.id }}">{{ city.name }}</option>
+        {% endfor %}
     </tbody>
 {% else %}
     <p>No search results</p>

@@ -1,12 +1,9 @@
 {% extends 'admin/base_site.html'%}
-
-{#{% load static %}#}
 {% block content %}
 <div>
     <form action="{% url 'admin:upload_csv' %}" method="POST" enctype="multipart/form-data">
         {{ form.as_p }}
         {% csrf_token %}
-{#        <a href="upload-csv/confirm/" class="btn btn-secondary"><button>Upload File</button></a>#}
         <div class="submit-row">
             <input type="submit" value="Upload File">
         </div>

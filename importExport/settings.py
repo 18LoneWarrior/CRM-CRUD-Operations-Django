@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'app',
     'import_export',
     'django_excel',
+    'widget_tweaks'
     # 'django_filters',
 ]
 
@@ -80,7 +81,7 @@ WSGI_APPLICATION = 'importExport.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'new.db.sqlite3',
+        'NAME': BASE_DIR / 'data1.db.sqlite3',
     }
 }
 

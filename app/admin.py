@@ -1,18 +1,17 @@
 from django.contrib import admin
 import csv
-from .forms import RecordSearchForm
-from .models import Record
+from .forms import RecordSearchForm, PersonSearchForm
+from .models import Record, Person, City, Country, State
 from django.urls import path
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django import forms
 from tablib import Dataset
+from django.utils.translation import gettext_lazy as _
+from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 
-
-# Register your models here.
-
-# admin.site.register(Record)
 
 def export_csv(modeladmin, request, queryset):
     filename = 'Record.csv'
@@ -50,7 +49,7 @@ class RecordAdmin(admin.ModelAdmin):
                     path('upload-csv/review/', self.data_preview, name='data_preview'),
                     path('search-view/', self.search_view, name='search-view'),
                     path('search/', self.search, name='search'),
-                    path('search-filter/', self.search_filter, name='search-filter'),]
+                    path('search-filter/', self.search_filter, name='search-filter'), ]
         return new_urls + urls
 
     def upload_csv(self, request):
@@ -96,9 +95,6 @@ class RecordAdmin(admin.ModelAdmin):
             imported_data = request.session.get('imported_data', [])
             print("__________________________", imported_data)
             selected_data = []
-            # for data in imported_data:
-            #     if data in selected_records:
-            #         selected_data.append(data)
 
             for index in selected_records:
                 index = int(index)
@@ -153,6 +149,67 @@ class RecordAdmin(admin.ModelAdmin):
         return render(request, 'admin/app/results.html', context)
 
 
+# CUSTOM FILTER SECTION FOR "CITY" AND "STATE" IN PERSON MODEL
+class CityFilter(admin.SimpleListFilter):
+    title = _('City')
+    parameter_name = 'city'
+
+    def lookups(self, request, model_admin):
+        cities = City.objects.values_list('id', 'name')
+        return cities
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(city__id=self.value())
+        return queryset
+
+
+class CountryFilter(admin.SimpleListFilter):
+    title = _('Country')
+    parameter_name = 'country'
+
+    def lookups(self, request, model_admin):
+        states = Country.objects.values_list('id', 'name')
+        return states
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(state__id=self.value())
+        return queryset
+
+
+# URLS AND VIEWS FOR THE PERSON MODEL WITH CUSTOM SEARCH AND FILTER OPTIONS
+class PersonAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'city', 'country', 'state')
+    list_filter = (CityFilter, CountryFilter)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [path('city_choices/', self.city_choices, name='city_choices'), ]
+        return my_urls + urls
+
+    def city_choices(self, request):
+        state_id = request.GET.get('state', None)
+        state = get_object_or_404(State, id=state_id) if state_id else None
+        # Get the city choices based on the selected state from the Person model
+        persons_in_state = Person.objects.filter(state=state)
+        cities = City.objects.filter(person__in=persons_in_state).distinct()
+        # Render the HTML for the updated city choices
+        html = render_to_string('admin/app/index.html', {'cities': cities})
+        return HttpResponse(html)
+
+    def get_changelist_form(self, request, **kwargs):
+        form = PersonSearchForm(request.GET)
+        return form
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['search_form'] = self.get_changelist_form(request)
+        return super().changelist_view(request, extra_context=extra_context)
+
+
 admin.site.register(Record, RecordAdmin)
-
-
+admin.site.register(Person, PersonAdmin)
+admin.site.register(City)
+admin.site.register(State)
+admin.site.register(Country)

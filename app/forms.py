@@ -1,7 +1,9 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django import forms
-from .models import Record
+from django.forms import ModelChoiceField
+from django.urls import reverse, reverse_lazy
+from .models import Record, Person, City, Country, State
 
 
 class SignUpForm(UserCreationForm):
@@ -74,8 +76,25 @@ class RecordSearchForm(forms.ModelForm):
         model = Record
         fields = ['city', 'state']
 
-    # search = forms.CharField(max_length=100, required=False, label="Search")
     city = forms.ModelChoiceField(queryset=Record.objects.values_list
     ('city', flat=True).distinct(), empty_label="--_--", required=False)
     state = forms.ModelChoiceField(queryset=Record.objects.values_list
     ('state', flat=True).distinct(), empty_label="--_--", required=False)
+
+
+class PersonSearchForm(forms.ModelForm):
+    class Meta:
+        model = Person
+        fields = ['state', 'city']
+
+    state = forms.ModelChoiceField(queryset=State.objects.all(), empty_label="--_--", required=False)
+    city = forms.ModelChoiceField(queryset=City.objects.none(), empty_label="--_--", required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['city'].queryset = City.objects.none()
+
+        # Add HTMX attributes to the form fields
+        self.fields['state'].widget.attrs['hx-get'] = reverse_lazy('admin:city_choices')
+        self.fields['state'].widget.attrs['hx-target'] = '#id_city'
+        self.fields['state'].widget.attrs['hx-swap'] = 'innerHTML'
